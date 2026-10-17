@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5line-mo — Learn Treble Clef Notes</title>
+<meta name="description" content="Learn the 14 basic notes of the treble clef staff. Interactive learning + a recognition game with real piano-like tones.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e9e9e7; --bg2:#dfdfdb; --ink:#1d1a15; --ink2:#5c574d;
+  --card:#f5f4f0; --line:#d4d4cf; --accent:#e4572e; --accent-ink:#fff;
+  --radius:18px; --shadow:0 18px 50px -18px rgba(23,21,18,.25);
+  --ui:'Space Grotesk','Noto Sans TC',system-ui,sans-serif;
+  --display:'Dela Gothic One','Noto Sans TC',sans-serif;
+}
+[data-theme="white"]{
+  --bg:#ffffff; --bg2:#f2f2f2; --ink:#171512; --ink2:#5c574d;
+  --card:#ffffff; --line:#e0e0e0; --accent:#e4572e; --accent-ink:#fff;
+  --shadow:0 18px 50px -18px rgba(23,21,18,.16);
+}
+[data-theme="black"]{
+  --bg:#131311; --bg2:#1b1b18; --ink:#f2efe6; --ink2:#a39d8d;
+  --card:#1e1e1a; --line:#33332c; --accent:#ffb03a; --accent-ink:#171512;
+  --shadow:0 18px 50px -18px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--ui);min-height:100vh;
+  transition:background .35s,color .35s;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .04 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{max-width:960px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+header.top{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+  background:color-mix(in srgb,var(--bg) 82%,transparent);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:12px;padding:13px 24px;max-width:960px;margin:0 auto}
+.wordmark{font-family:var(--display);font-size:18px;letter-spacing:.03em}
+.wordmark em{font-style:normal;color:var(--accent)}
+.spacer{flex:1}
+.chipbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);
+  border-radius:999px;padding:8px 14px;font:500 13px var(--ui);cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;transition:.2s}
+.chipbtn:hover{border-color:var(--accent)}
+.tdot{width:13px;height:13px;border-radius:50%;border:1px solid rgba(0,0,0,.28);padding:0;cursor:pointer}
+.tdot[data-t="white"]{background:#ffffff}
+.tdot[data-t="silver"]{background:#e9e9e7}
+.tdot[data-t="black"]{background:#14110e}
+.tdot.on{outline:2px solid var(--accent);outline-offset:2px}
+.hero{padding:52px 0 6px;text-align:center}
+.hero h1{font-family:var(--display);font-size:clamp(38px,7vw,72px);line-height:1;letter-spacing:.01em}
+.hero h1 .o{color:var(--accent)}
+.hero p{margin:14px auto 0;max-width:560px;color:var(--ink2);font-size:15.5px;line-height:1.6}
+.modetabs{display:flex;gap:10px;justify-content:center;margin:26px 0 6px}
+.modetab{border:1px solid var(--line);background:var(--card);color:var(--ink2);
+  border-radius:999px;padding:11px 30px;font:700 15px var(--ui);cursor:pointer;transition:.2s}
+.modetab.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.stage{position:relative;background:var(--card);border:1px solid var(--line);
+  border-radius:24px;margin:18px 0;padding:26px 18px 18px;box-shadow:var(--shadow);overflow:hidden}
+#staffWrap{position:relative}
+#staff{width:100%;height:auto;display:block}
+#bigName{position:absolute;top:2px;left:0;right:0;text-align:center;pointer-events:none;
+  font-family:var(--display);font-size:clamp(40px,9vw,84px);color:#b9b9b6;opacity:0;
+  transition:opacity 1.2s ease;letter-spacing:.02em;z-index:5}
+#bigName.show{opacity:1;transition:opacity .15s ease}
+#bigName .sub{display:block;font-size:.32em;letter-spacing:.14em;color:var(--ink2);font-family:var(--ui);font-weight:500}
+.hintline{text-align:center;color:var(--ink2);font-size:13.5px;margin-top:10px;min-height:22px}
+.answers{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.answers button{border:1px solid var(--line);background:var(--bg);color:var(--ink);
+  border-radius:14px;padding:14px 6px;font:700 16px var(--ui);cursor:pointer;transition:.18s}
+.answers button small{display:block;font-weight:400;font-size:11.5px;color:var(--ink2);margin-top:2px}
+.answers button:hover:not(:disabled){border-color:var(--accent);transform:translateY(-2px)}
+.answers button:disabled{opacity:.55;cursor:default}
+.answers button.right{background:#2f7d4f;border-color:#2f7d4f;color:#fff;opacity:1}
+.answers button.right small{color:#e8f2ea}
+.answers button.wrong{background:#b03a2e;border-color:#b03a2e;color:#fff;opacity:1;animation:shake .4s}
+.answers button.wrong small{color:#f6e3e0}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.scorebar{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:14px;
+  font-size:14px;color:var(--ink2)}
+.scorebar b{color:var(--ink);font-size:19px}
+.notegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;margin-top:16px}
+.notegrid button{border:1px solid var(--line);background:var(--bg);color:var(--ink);
+  border-radius:13px;padding:11px 6px;font:700 15px var(--ui);cursor:pointer;transition:.18s}
+.notegrid button small{display:block;font-weight:400;font-size:11px;color:var(--ink2);margin-top:2px}
+.notegrid button:hover{border-color:var(--accent);transform:translateY(-2px)}
+.notegrid button.hit{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--bg))}
+.ctrlrow{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.btn{border:none;border-radius:13px;padding:12px 24px;font:700 14.5px var(--ui);cursor:pointer;transition:.18s}
+.btn.primary{background:var(--ink);color:var(--bg)}
+.btn.primary:hover{transform:translateY(-2px)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--accent)}
+footer{margin-top:56px;border-top:1px solid var(--line);padding:26px 0 40px;color:var(--ink2);font-size:13px}
+.foot-in{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.bmc{display:inline-flex;align-items:center;gap:8px;background:#ffdd00;color:#171512;font-weight:700;
+  border-radius:10px;padding:9px 16px;text-decoration:none;font-size:13.5px}
+@media(max-width:560px){.answers{grid-template-columns:repeat(2,1fr)}.hero{padding-top:36px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <span class="wordmark">5LINE<em>-MO</em></span>
+    <div class="spacer"></div>
+    <button class="chipbtn" id="langBtn">繁 / EN</button>
+    <button class="chipbtn" id="themeBtn" title="color theme"><span class="tdot" data-t="white"></span><span class="tdot" data-t="silver"></span><span class="tdot" data-t="black"></span></button>
+    <a class="chipbtn" style="text-decoration:none" href="https://github.com/artzdesignmo/5line-mo" target="_blank" rel="noopener">GitHub ↗</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <h1>LEARN THE <span class="o">STAFF</span></h1>
+    <p data-i18n="hero">Fourteen basic treble-clef notes. Tap to hear them, then test yourself in the game.</p>
+  </section>
+
+  <div class="modetabs">
+    <button class="modetab on" id="tabLearn" data-i18n="learn">📖 Learn</button>
+    <button class="modetab" id="tabGame" data-i18n="game">🎮 Game</button>
+  </div>
+
+  <!-- LEARN -->
+  <section class="stage" id="learnStage">
+    <div id="staffWrapLearn"></div>
+    <div class="hintline" data-i18n="learnHint">Tap any note on the staff to hear it.</div>
+    <div class="notegrid" id="noteGrid"></div>
+  </section>
+
+  <!-- GAME -->
+  <section class="stage" id="gameStage" hidden>
+    <div id="staffWrapGame" style="position:relative">
+      <div id="bigName"></div>
+    </div>
+    <div class="hintline" id="gameHint"></div>
+    <div class="scorebar">
+      <span>✅ <b id="scoreOk">0</b></span>
+      <span>❌ <b id="scoreNg">0</b></span>
+      <span>🏆 <span data-i18n="best">Best</span>: <b id="scoreBest">0</b></span>
+    </div>
+    <div class="answers" id="answers"></div>
+    <div class="ctrlrow">
+      <button class="btn primary" id="nextBtn" data-i18n="next">Next note →</button>
+      <button class="btn ghost" id="hearBtn" data-i18n="hear">🔊 Hear it again</button>
+    </div>
+  </section>
+</div>
+
+<footer><div class="wrap foot-in">
+  <span><b>5LINE-MO</b> · MIT · <span data-i18n="foot">built in the open, free forever</span></span>
+  <span class="spacer"></span>
+  <a class="bmc" href="https://buymeacoffee.com/whynotartmoney" target="_blank" rel="noopener">☕ Buy Me a Coffee</a>
+</div></footer>
+
+<script>
+"use strict";
+/* ================= 5line-mo · treble-clef note trainer ================= */
+
+/* ---- the 14 notes (y = SVG staff coords, top line F5 = 80) ---- */
+const NOTES=[
+ {sol:"ti", zh:"西", letter:"B3", freq:246.94, y:200, ledger:false, tag:"low"},
+ {sol:"do", zh:"哆", letter:"C4", freq:261.63, y:180, ledger:true,  tag:"low"},
+ {sol:"re", zh:"來", letter:"D4", freq:293.66, y:170, ledger:false, tag:"low"},
+ {sol:"mi", zh:"咪", letter:"E4", freq:329.63, y:160, ledger:false},
+ {sol:"fa", zh:"發", letter:"F4", freq:349.23, y:150, ledger:false},
+ {sol:"so", zh:"唆", letter:"G4", freq:392.00, y:140, ledger:false},
+ {sol:"la", zh:"拉", letter:"A4", freq:440.00, y:130, ledger:false},
+ {sol:"ti", zh:"西", letter:"B4", freq:493.88, y:120, ledger:false},
+ {sol:"do", zh:"哆", letter:"C5", freq:523.25, y:110, ledger:false, tag:"high"},
+ {sol:"re", zh:"來", letter:"D5", freq:587.33, y:100, ledger:false, tag:"high"},
+ {sol:"mi", zh:"咪", letter:"E5", freq:659.25, y:90,  ledger:false, tag:"high"},
+ {sol:"fa", zh:"發", letter:"F5", freq:698.46, y:80,  ledger:false, tag:"high"},
+ {sol:"so", zh:"唆", letter:"G5", freq:783.99, y:60,  ledger:false, tag:"high"},
+ {sol:"la", zh:"拉", letter:"A5", freq:880.00, y:40,  ledger:true,  tag:"high"},
+];
+const INK=getComputedStyle(document.documentElement).getPropertyValue('--ink').trim();
+
+/* ---- i18n ---- */
+const I18N={
+en:{hero:"Fourteen basic treble-clef notes. Tap to hear them, then test yourself in the game.",
+ learn:"📖 Learn", game:"🎮 Game", learnHint:"Tap any note on the staff to hear it.",
+ best:"Best", next:"Next note →", hear:"🔊 Hear it again", foot:"built in the open, free forever",
+ q:"Which note is this?", tapreveal:"Tap the note to reveal it 🔊", correct:"Correct! 🎉", wrong:"Try again 💪",
+ low:"low", high:"high", playScale:"▶ Play scale", stopScale:"⏹ Stop"},
+tc:{hero:"高音譜號十四個基本音。撳嚟聽，再去遊戲考下自己。",
+ learn:"📖 學習", game:"🎮 遊戲", learnHint:"撳五線譜上任何一個音符嚟聽。",
+ best:"最佳", next:"下一個 →", hear:"🔊 再聽一次", foot:"開放製作，永久免費",
+ q:"呢個係咩音？", tapreveal:"撳個音符開估 🔊", correct:"啱咗！🎉", wrong:"再試下 💪",
+ low:"低", high:"高", playScale:"▶ 播音階", stopScale:"⏹ 停止"}
+};
+let lang=localStorage.getItem("fivelinemo-lang")||"en";
+const t=k=>(I18N[lang]&&I18N[lang][k])||I18N.en[k]||k;
+function noteName(n){
+  const pre=n.tag==="low"?t("low"):n.tag==="high"?t("high"):"";
+  return (pre?pre+" ":"")+n.sol;
+}
+function applyI18n(){
+  document.querySelectorAll("[data-i18n]").forEach(el=>{el.innerHTML=t(el.dataset.i18n);});
+  document.documentElement.lang=lang==="tc"?"zh-Hant":"en";
+  buildNoteGrid(); renderGameHint();
+}
+
+/* ---- theme ---- */
+let theme=localStorage.getItem("fivelinemo-theme")||"silver";
+function applyTheme(){document.documentElement.dataset.theme=theme;
+  document.querySelectorAll("#themeBtn .tdot").forEach(d=>d.classList.toggle("on",d.dataset.t===theme));}
+applyTheme();
+document.querySelectorAll("#themeBtn .tdot").forEach(d=>d.onclick=e=>{e.stopPropagation();theme=d.dataset.t;localStorage.setItem("fivelinemo-theme",theme);applyTheme();drawAll();});
+document.getElementById("langBtn").onclick=()=>{lang=lang==="en"?"tc":"en";localStorage.setItem("fivelinemo-lang",lang);applyI18n();drawAll();};
+
+/* ---- audio: warm piano-ish tone via Web Audio ---- */
+let AC=null;
+function ac(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended")AC.resume(); return AC; }
+function playFreq(freq,dur=1.4){
+  const c=ac(), o=c.createOscillator(), o2=c.createOscillator(), g=c.createGain();
+  o.type="triangle"; o.frequency.value=freq;
+  o2.type="sine"; o2.frequency.value=freq*2; 
+  const g2=c.createGain(); g2.gain.value=.25; o2.connect(g2); g2.connect(g);
+  o.connect(g); g.connect(c.destination);
+  const now=c.currentTime;
+  g.gain.setValueAtTime(0,now);
+  g.gain.linearRampToValueAtTime(.5,now+.03);
+  g.gain.exponentialRampToValueAtTime(.001,now+dur);
+  o.start(now); o2.start(now); o.stop(now+dur+.1); o2.stop(now+dur+.1);
+}
+
+/* ---- staff drawing ---- */
+const STAFF_TOP=80, LS=20; // top line y, line spacing
+function staffLines(x0,x1){
+  let s="";
+  for(let i=0;i<5;i++){const y=STAFF_TOP+i*LS;
+    s+=`<line x1="${x0}" y1="${y}" x2="${x1}" y2="${y}" stroke="currentColor" stroke-width="1.6" opacity=".85"/>`;}
+  return s;
+}
+function clef(x){
+  return `<text x="${x}" y="172" font-size="118" fill="currentColor" opacity=".9" font-family="serif">𝄞</text>`;
+}
+function noteHead(x,y,fill,extra=""){
+  return `<g ${extra}><ellipse cx="${x}" cy="${y}" rx="10.5" ry="8" fill="${fill}" transform="rotate(-18 ${x} ${y})"/></g>`;
+}
+function ledger(x,y){
+  return `<line x1="${x-20}" y1="${y}" x2="${x+20}" y2="${y}" stroke="currentColor" stroke-width="1.6"/>`;
+}
+function cssInk(){return getComputedStyle(document.documentElement).getPropertyValue('--ink').trim()||"#1d1a15";}
+function cssAccent(){return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||"#e4572e";}
+
+/* learn staff: all 14 notes */
+function drawLearn(){
+  const W=860, notes=NOTES, ink=cssInk(), ac=cssAccent();
+  const x0=70, x1=W-30, step=(x1-x0-60)/(notes.length-1);
+  let s=`<svg id="staff" viewBox="0 0 ${W} 250" style="color:${ink}" role="img" aria-label="treble staff">`;
+  s+=staffLines(20,W-20)+clef(34);
+  notes.forEach((n,i)=>{
+    const x=x0+30+i*step;
+    if(n.ledger)s+=ledger(x,n.y);
+    s+=`<g class="lnote" data-i="${i}" style="cursor:pointer">`+
+       `<circle cx="${x}" cy="${n.y}" r="17" fill="transparent"/>`+
+       noteHead(x,n.y,i===learnHi?ac:ink)+
+       `<text x="${x}" y="232" text-anchor="middle" font-size="13" fill="${ink}" opacity=".75" font-family="'Space Grotesk','Noto Sans TC',sans-serif">${n.sol}</text></g>`;
+  });
+  s+=`</svg>`;
+  document.getElementById("staffWrapLearn").innerHTML=s;
+  document.querySelectorAll(".lnote").forEach(g=>g.onclick=()=>learnTap(+g.dataset.i));
+}
+let learnHi=-1;
+function learnTap(i){
+  learnHi=i; drawLearn();
+  const n=NOTES[i];
+  playFreq(n.freq);
+  flashBig(n);
+}
+function buildNoteGrid(){
+  const g=document.getElementById("noteGrid"); g.innerHTML="";
+  NOTES.forEach((n,i)=>{
+    const b=document.createElement("button");
+    b.innerHTML=`${n.sol}<small>${n.zh} · ${n.letter}</small>`;
+    b.onclick=()=>learnTap(i);
+    g.appendChild(b);
+  });
+}
+
+/* game staff: single mystery note */
+let gameNote=null, gameLock=false;
+function drawGame(){
+  const W=860, ink=cssInk(), ac=cssAccent();
+  let s=`<svg id="staff" viewBox="0 0 ${W} 250" style="color:${ink}" role="img">`;
+  s+=staffLines(20,W-20)+clef(34);
+  if(gameNote){
+    const x=W/2;
+    if(gameNote.ledger)s+=ledger(x,gameNote.y);
+    s+=`<g id="mystery" style="cursor:pointer">`+
+       `<circle cx="${x}" cy="${gameNote.y}" r="26" fill="transparent"/>`+
+       noteHead(x,gameNote.y,revealed?ac:ink)+`</g>`;
+  }
+  s+=`</svg>`;
+  document.getElementById("staffWrapGame").innerHTML=
+    `<div id="bigName"></div>`+s.replace('<svg id="staff"','<svg id="staff" style="margin-top:34px"');
+  const m=document.getElementById("mystery");
+  if(m)m.onclick=()=>revealNote();
+}
+let revealed=false;
+function revealNote(){
+  if(!gameNote||revealed||gameLock)return;
+  revealed=true; drawGame();
+  playFreq(gameNote.freq);
+  flashBig(gameNote);
+  renderGameHint();
+}
+function flashBig(n){
+  const el=document.getElementById("bigName");
+  if(!el)return;
+  el.innerHTML=`${n.sol}<span class="sub">${n.zh} · ${n.letter} · ${Math.round(n.freq)} Hz</span>`;
+  el.classList.add("show");
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove("show"),2000);
+}
+
+/* ---- game logic ---- */
+let scoreOk=0, scoreNg=0;
+let best=+(localStorage.getItem("fivelinemo-best")||0);
+function renderGameHint(){
+  const h=document.getElementById("gameHint"); if(!h)return;
+  h.textContent=gameNote?(revealed?t("tapreveal"):t("q")):"";
+  document.getElementById("scoreOk").textContent=scoreOk;
+  document.getElementById("scoreNg").textContent=scoreNg;
+  document.getElementById("scoreBest").textContent=best;
+}
+function newRound(){
+  revealed=false; gameLock=false;
+  let n; do{ n=NOTES[Math.floor(Math.random()*NOTES.length)]; }while(gameNote&&n.letter===gameNote.letter);
+  gameNote=n;
+  drawGame(); buildAnswers(); renderGameHint();
+}
+function buildAnswers(){
+  const box=document.getElementById("answers"); box.innerHTML="";
+  const wrong=new Set();
+  while(wrong.size<3){const c=NOTES[Math.floor(Math.random()*NOTES.length)]; if(c.letter!==gameNote.letter)wrong.add(c);}
+  const opts=[gameNote,...wrong].sort(()=>Math.random()-.5);
+  opts.forEach(n=>{
+    const b=document.createElement("button");
+    b.innerHTML=`${noteName(n)}<small>${n.zh} · ${n.letter}</small>`;
+    b.onclick=()=>answer(b,n);
+    box.appendChild(b);
+  });
+}
+function answer(btn,n){
+  if(gameLock||revealed&&n.letter===gameNote.letter)return;
+  if(n.letter===gameNote.letter){
+    gameLock=true; revealed=true;
+    btn.classList.add("right");
+    document.querySelectorAll("#answers button").forEach(x=>x.disabled=true);
+    scoreOk++;
+    if(scoreOk>best){best=scoreOk;localStorage.setItem("fivelinemo-best",best);}
+    playFreq(gameNote.freq);
+    flashBig(gameNote);
+    const h=document.getElementById("gameHint"); h.textContent=t("correct");
+    renderGameHint(); document.getElementById("gameHint").textContent=t("correct");
+    setTimeout(newRound,2300);
+  }else{
+    btn.classList.add("wrong"); btn.disabled=true;
+    scoreNg++; renderGameHint();
+    setTimeout(()=>btn.classList.remove("wrong"),450);
+  }
+}
+document.getElementById("nextBtn").onclick=()=>newRound();
+document.getElementById("hearBtn").onclick=()=>{if(gameNote)playFreq(gameNote.freq);};
+
+/* ---- mode tabs ---- */
+const tabL=document.getElementById("tabLearn"), tabG=document.getElementById("tabGame");
+function setMode(m){
+  const learn=m==="learn";
+  tabL.classList.toggle("on",learn); tabG.classList.toggle("on",!learn);
+  document.getElementById("learnStage").hidden=!learn;
+  document.getElementById("gameStage").hidden=learn;
+  if(!learn&&!gameNote)newRound();
+}
+tabL.onclick=()=>setMode("learn"); tabG.onclick=()=>setMode("game");
+
+/* ---- scale player (learn) ---- */
+let scaleTimer=null;
+function drawAll(){ drawLearn(); if(gameNote)drawGame(); }
+
+/* ---- init ---- */
+applyI18n(); drawLearn(); renderGameHint();
+document.getElementById("scoreBest").textContent=best;
+</script>
+</body>
+</html>
